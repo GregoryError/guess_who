@@ -16,6 +16,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.Set;
@@ -53,21 +54,39 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+
         personMap = new HashMap<>();
+
         parseToMap(contentStr, personMap);
 
-        Set<Map.Entry<String, String>> entries = personMap.entrySet();
-        for (Map.Entry<String, String> e : entries) {
-            Log.i("OUT", e.getKey());
-            Log.i("REF", e.getValue());
+        LinkedList<String> names = new LinkedList<>(personMap.keySet());
+
+
+
+        String personX = names.get((int) ((names.size() + 1) * Math.random()));
+        //imageView.setImageBitmap();
+
+        switch ((int) (Math.random() * 4)) {
+            case 0:
+                button_0.setText(personX);
+                break;
+            case 1:
+                button_1.setText(personX);
+                break;
+            case 2:
+                button_2.setText(personX);
+                break;
+            case 3:
+                button_3.setText(personX);
+                break;
         }
 
 
     }
 
     private void parseToMap(String content, HashMap<String, String> map) {
-        LinkedList<String> names = new LinkedList<>();
         LinkedList<String> images = new LinkedList<>();
+        LinkedList<String> names = new LinkedList<>();
 
         Pattern namePattern = Pattern.compile("\"celebrity-name\">(.*?)</span>");
         Matcher nameMatcher = namePattern.matcher(content);
@@ -84,7 +103,6 @@ public class MainActivity extends AppCompatActivity {
         while (!names.isEmpty()) {
             map.put(names.pop(), images.pop());
         }
-
     }
 
     private static class UrlTaskWorker extends AsyncTask<String, Void, String> {
