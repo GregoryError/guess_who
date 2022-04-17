@@ -7,13 +7,21 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.ImageView;
 
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -21,8 +29,10 @@ import javax.net.ssl.HttpsURLConnection;
 public class MainActivity extends AppCompatActivity {
 
     private Button button_0, button_1, button_2, button_3;
+    private ImageView imageView;
     private final String urlStr = "https://www.usmagazine.com/celebrities/a/";
     private String contentStr = "";
+    HashMap<String, String> personMap;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,7 +42,8 @@ public class MainActivity extends AppCompatActivity {
         button_1 = findViewById(R.id.button1);
         button_2 = findViewById(R.id.button2);
         button_3 = findViewById(R.id.button3);
-        
+        imageView = findViewById(R.id.imageView);
+
         UrlTaskWorker urlWorker = new UrlTaskWorker();
         try {
             contentStr = urlWorker.execute(urlStr).get();
@@ -42,7 +53,37 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        personMap = new HashMap<>();
+        parseToMap(contentStr, personMap);
 
+        Set<Map.Entry<String, String>> entries = personMap.entrySet();
+        for (Map.Entry<String, String> e : entries) {
+            Log.i("OUT", e.getKey());
+            Log.i("REF", e.getValue());
+        }
+
+
+    }
+
+    private void parseToMap(String content, HashMap<String, String> map) {
+        LinkedList<String> names = new LinkedList<>();
+        LinkedList<String> images = new LinkedList<>();
+
+        Pattern namePattern = Pattern.compile("\"celebrity-name\">(.*?)</span>");
+        Matcher nameMatcher = namePattern.matcher(content);
+        while (nameMatcher.find()) {
+            names.add(nameMatcher.group(1));
+        }
+
+        Pattern imgPattern = Pattern.compile("data-src=\"https://(.*?)jpg");
+        Matcher imgMatcher = imgPattern.matcher(content);
+        while (imgMatcher.find()) {
+            images.add(imgMatcher.group(1) + "jpg");
+        }
+
+        while (!names.isEmpty()) {
+            map.put(names.pop(), images.pop());
+        }
 
     }
 
